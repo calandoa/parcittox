@@ -1,0 +1,53 @@
+
+EXEC := dittox
+
+OBJ_DIR := obj
+
+
+
+DITTO_ENCR_DIR := EncryptDecrypt
+DITTO_ENCR_SRC := Encryption.cpp rijndael.cpp NewRandom.cpp sha2.cpp MemUtil.cpp
+
+DITTO_DIR := ditto
+DITTO_SRC :=
+
+
+CUSTOM_SRC := dittox.cpp
+
+SRC	:= $(CUSTOM_SRC) \
+	$(DITTO_SRC:%.cpp=$(DITTO_DIR)/%.cpp) \
+	$(DITTO_ENCR_SRC:%.cpp=$(DITTO_DIR)/$(DITTO_ENCR_DIR)/%.cpp)
+
+OBJ	:= $(CUSTOM_SRC:%.cpp=$(OBJ_DIR)/%.o) \
+	$(DITTO_SRC:%.cpp=$(OBJ_DIR)/%.o) \
+	$(DITTO_ENCR_SRC:%.cpp=$(OBJ_DIR)/%.o)
+
+
+
+WIN_COMPAT := -I win_compat -include win_compat.h
+
+CPPFLAGS := -I $(DITTO_DIR) -DDBGEXEC
+
+
+
+
+$(EXEC): $(OBJ_DIR) $(OBJ)
+	g++ -g $(OBJ) -o $@ -lanl
+
+clean:
+	rm -fR $(OBJ_DIR) $(EXEC)
+
+
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+$(OBJ_DIR)/%.o: $(DITTO_DIR)/$(DITTO_ENCR_DIR)/%.cpp
+	g++ -g $(CPPFLAGS) $(WIN_COMPAT) -c $< -o $@
+
+$(OBJ_DIR)/%.o: $(DITTO_ENCR_DIR)/%.cpp
+	g++ -g  $(CPPFLAGS) $(WIN_COMPAT) -c $< -o $@
+
+$(OBJ_DIR)/%.o: %.cpp
+	g++ -g  $(CPPFLAGS) $(WIN_COMPAT) -c $< -o $@
+

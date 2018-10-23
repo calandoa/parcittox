@@ -1,0 +1,8 @@
+[Desktop Entry]
+_Name=Parcittox
+_Comment=Clipboard Manager
+Icon=/usr/local/share/pixmaps/parcittox
+Exec=/usr/local/bin/parcittox
+Terminal=false
+Type=Application
+Categories=GTK;GNOME;Application;Utility;
