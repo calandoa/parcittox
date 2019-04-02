@@ -177,11 +177,12 @@ struct cmdline_opts *parse_options(int argc, char* argv[])
 	/* Check which options were parseed */
 
 	/* Do not display icon option */
-	if (opts->icon)  {
+	if (opts->icon)
 		set_pref_int32("no_icon",TRUE);
-	} else
+	else
 		set_pref_int32("no_icon",FALSE);
-		return opts;
+
+	return opts;
 }
 
 
@@ -432,26 +433,30 @@ int read_fifo(struct p_fifo *f, int which)
 ****************************************************************************/
 int write_fifo(struct p_fifo *f, int which, char *buf, int len)
 {
-	int i, l,fd;
-	l=0;
-	switch(which){
+	int i = -1;
+	int l = 0;
+	int fd;
+	switch (which) {
 		case FIFO_MODE_PRI:
-			if(f->dbg) g_printf("Using pri fifo for write\n");
+			if (f->dbg)
+				g_printf("Using pri fifo for write\n");
 			fd=f->fifo_p;
 			break;
 		case FIFO_MODE_CLI:
-			if(f->dbg) g_printf("Using cli fifo for write\n");
+			if (f->dbg)
+				g_printf("Using cli fifo for write\n");
 			fd=f->fifo_c;
 			break;
 		default:
 			g_printf("Unknown fifo %d!\n",which);
 			return -1;
 	}
-	if(NULL ==f || fd <3 || NULL ==buf)
+	if (NULL ==f || fd <3 || NULL ==buf)
 		return -1;
-	if(f->dbg) g_printf("writing '%s'\n",buf);
-	while(len){
-		i=write(fd,buf,len);
+	if (f->dbg)
+		g_printf("writing '%s'\n",buf);
+	while (len) {
+		i = write(fd,buf,len);
 		if(i>0)
 			len-=i;
 		++l;
@@ -461,8 +466,8 @@ int write_fifo(struct p_fifo *f, int which, char *buf, int len)
 		}
 
 	}
-	if( -1 == i){
-		if( EAGAIN != errno){
+	if (-1 == i) {
+		if (EAGAIN != errno) {
 			perror("write_fifo");
 			return -1;
 		}

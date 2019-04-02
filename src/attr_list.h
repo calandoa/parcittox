@@ -28,8 +28,6 @@ PangoAttrInt *get_strikethrough_attr(GtkLabel *label);
 gboolean is_strikethrough(GtkLabel *label);
 void set_strikethrough(GtkLabel *label, gboolean mode);
 GList *find_h_item(GList *list,GtkWidget *w, GList *e);
-void add_h_item(struct history_info *h, GtkWidget *w, GList* element, gint which);
-void rm_h_item(struct history_info *h, GtkWidget *w, GList* element, gint which);
 void handle_marking(struct history_info *h, GtkWidget *w, gint index, gint which);
 #endif
 

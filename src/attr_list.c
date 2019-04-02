@@ -169,31 +169,24 @@ GList *find_h_item(GList *list,GtkWidget *w, GList *e)
 \n\b Arguments:
 \n\b Returns:
 ****************************************************************************/
-void add_h_item(struct history_info *h, GtkWidget *w, GList* element, gint which)
+static void add_h_item(struct history_info *h, GtkWidget *w, GList* element, gint which)
 {
 	GList *ele;
 	GList *op;
-	switch(which){
-		case OPERATE_DELETE:
-			op=h->delete_list;
-			break;
-		case OPERATE_PERSIST:
-			op=h->persist_list;
-			break;
-	}
+	if (which == OPERATE_DELETE)
+		op = h->delete_list;
+	else
+		op = h->persist_list;
+
 	struct s_item_info *i;
-	if(NULL == (ele=find_h_item(op,w,element) ) ){
-		if(NULL != (i=g_malloc(sizeof(struct s_item_info)) ) ){
+	if (NULL == (ele=find_h_item(op,w,element) )) {
+		if (NULL != (i=g_malloc(sizeof(struct s_item_info)) )) {
 			i->item=w;
 			i->element=element;
-			switch(which){
-				case OPERATE_DELETE:
-					h->delete_list=g_list_prepend(op,(gpointer)i);
-					break;
-				case OPERATE_PERSIST:
-					h->persist_list=g_list_prepend(op,(gpointer)i);
-					break;
-			}
+			if (which == OPERATE_DELETE)
+				h->delete_list=g_list_prepend(op,(gpointer)i);
+			else
+				h->persist_list=g_list_prepend(op,(gpointer)i);
 
 			/** printf("Added w %p e %p %p\n",w,element,h->delete_list);	fflush(NULL);*/
 		}
@@ -209,7 +202,7 @@ from the list.
 \n\b Arguments:
 \n\b Returns:
 ****************************************************************************/
-void rm_h_item(struct history_info *h, GtkWidget *w, GList* element, gint which)
+static void rm_h_item(struct history_info *h, GtkWidget *w, GList* element, gint which)
 {
 	GList *i;
 	GList *op;

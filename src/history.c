@@ -485,6 +485,8 @@ int save_history_as_text(gchar *path)
 	}
 
 	g_printf("histpath='%s'\n",path);
+
+	return 0;
 }
 /***************************************************************************/
 /** Dialog to save the history file.

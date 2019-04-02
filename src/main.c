@@ -257,7 +257,7 @@ gchar *process_new_item(GtkClipboard *clip, gchar *ntext)
 		if( get_pref_int32("trim_wspace_begend") )
 			ntext = g_strstrip(ntext);
 	}
-done:
+
 	return rtn;
 }
 
@@ -577,6 +577,7 @@ gboolean check_clipboards_tic(gpointer data)
 	return TRUE;
 }
 
+#if 0
 /* Thread function called for each action performed */
 static void *execute_action(void *command)
 {
@@ -598,6 +599,7 @@ static void *execute_action(void *command)
 	/* Exit this thread */
 	pthread_exit(NULL);
 }
+#endif
 
 /* Called when execution action exits */
 static void action_exit(GPid pid, gint status, gpointer data)
@@ -1192,6 +1194,8 @@ static gboolean selection_done(GtkMenuShell *menushell, gpointer user_data)
 		save_history();
 		histinfo.change_flag = 0;
 	}
+
+	return FALSE;
 }
 
 /***************************************************************************/
@@ -1813,10 +1817,12 @@ static void	show_parcellite_menu(GtkStatusIcon *status_icon, guint button, guint
 \n\b Arguments:
 \n\b Returns:
 ****************************************************************************/
+#if 0
 gboolean show_parcellite_menu_wrapper(gpointer data)
 {
 	create_parcellite_menu(0, gtk_get_current_event_time());
 }
+#endif
 
 #ifdef HAVE_APPINDICATOR
 /***************************************************************************/
@@ -2036,9 +2042,10 @@ int main(int argc, char *argv[])
 	struct cmdline_opts *opts;
 	int mode;
 
-	bindtextdomain(GETTEXT_PACKAGE, PARCELLITELOCALEDIR);
-	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-	textdomain(GETTEXT_PACKAGE);
+	// disable i18n
+	//bindtextdomain(GETTEXT_PACKAGE, PARCELLITELOCALEDIR);
+	//bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+	//textdomain(GETTEXT_PACKAGE);
 
 	/* Initiate GTK+ */
 	gtk_init(&argc, &argv);
@@ -2048,82 +2055,81 @@ int main(int argc, char *argv[])
 
 	/* Parse options */
 	opts = parse_options(argc, argv);
-	if(NULL == opts)
+	if (NULL == opts)
 	 	return 1;
-	if(proc_find(PARCELLITE_PROG_NAME, PROC_MODE_EXACT, NULL)<2)	/**1 for me, and 1 for a running instance	*/
+	if (proc_find(PARCELLITE_PROG_NAME, PROC_MODE_EXACT, NULL)<2)	/**1 for me, and 1 for a running instance	*/
 		mode = PROG_MODE_DAEMON; /**first instance	*/
 	else
 		mode = PROG_MODE_CLIENT; /**already running, just access fifos & exit.	*/
 
 	/**get options/cmd line not parsed.	*/
-	if( NULL != opts->leftovers)g_print("%s\n",opts->leftovers);
+	if( NULL != opts->leftovers)
+		g_print("%s\n",opts->leftovers);
 	/**init fifo should set up the fifo and the callback (if we are daemon mode)	*/
-		if(opts->primary)	{
-			fifo = init_fifo(FIFO_MODE_PRI|mode);
-			if(fifo->dbg) g_printf("Hit PRI opt!\n");
+	if (opts->primary) {
+		fifo = init_fifo(FIFO_MODE_PRI|mode);
+		if (fifo->dbg)
+			g_printf("Hit PRI opt!\n");
 
-			if(PROG_MODE_CLIENT & mode){
-				if(NULL != opts->leftovers){
-					write_fifo(fifo,FIFO_MODE_PRI,opts->leftovers,strlen(opts->leftovers));
-					g_free(opts->leftovers);
-				}
-
-				if(fifo->dbg) g_printf("checking stdin\n");
-				write_stdin(fifo,FIFO_MODE_PRI);
-				usleep(1000);
-			}
-			/* Grab primary */
-			GtkClipboard* prim = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-			/* Print primary text (if any) */
-			gchar* prim_text = gtk_clipboard_wait_for_text(prim);
-			if (prim_text)
-				g_print("%s", prim_text);
-			g_free(prim_text);
-
-		}	else if(opts->clipboard){
-			fifo = init_fifo(FIFO_MODE_CLI|mode);
-
-			if(PROG_MODE_CLIENT & mode){
-				if(NULL != opts->leftovers){
-					write_fifo(fifo,FIFO_MODE_CLI,opts->leftovers,strlen(opts->leftovers));
-					g_free(opts->leftovers);
-				}
-				write_stdin(fifo,FIFO_MODE_CLI);
-				usleep(1000);
+		if (PROG_MODE_CLIENT & mode) {
+			if (NULL != opts->leftovers) {
+				write_fifo(fifo,FIFO_MODE_PRI,opts->leftovers,strlen(opts->leftovers));
+				g_free(opts->leftovers);
 			}
 
-			GtkClipboard* clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-			/* Print clipboard text (if any) */
-			gchar* clip_text = gtk_clipboard_wait_for_text(clip);
-			if (clip_text)
-				g_print("%s", clip_text);
-			g_free(clip_text);
-		}	else		{ /*use CLIPBOARD*/
-			GtkClipboard* clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-			fifo = init_fifo(FIFO_MODE_NONE|mode);
-				/* Copy from unrecognized options */
-			if(PROG_MODE_CLIENT & mode){
-				if(NULL != opts->leftovers){
-					write_fifo(fifo,FIFO_MODE_CLI,opts->leftovers,strlen(opts->leftovers));
-					g_free(opts->leftovers);
-				}
-					 /* Check if stdin is piped */
-				write_stdin(fifo,FIFO_MODE_CLI);
-				usleep(1000);
-			}
-
-			gchar* clip_text = gtk_clipboard_wait_for_text(clip);
-			if (clip_text)
-				g_print("%s", clip_text);
-			 g_free(clip_text);
-
+			if (fifo->dbg)
+				g_printf("checking stdin\n");
+			write_stdin(fifo,FIFO_MODE_PRI);
+			usleep(1000);
 		}
-				/* Run as daemon option */
+		/* Grab primary */
+		GtkClipboard* prim = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+		/* Print primary text (if any) */
+		gchar* prim_text = gtk_clipboard_wait_for_text(prim);
+		if (prim_text)
+			g_print("%s", prim_text);
+		g_free(prim_text);
+
+	} else if (opts->clipboard) {
+		fifo = init_fifo(FIFO_MODE_CLI|mode);
+
+		if (PROG_MODE_CLIENT & mode) {
+			if (NULL != opts->leftovers) {
+				write_fifo(fifo,FIFO_MODE_CLI,opts->leftovers,strlen(opts->leftovers));
+				g_free(opts->leftovers);
+			}
+			write_stdin(fifo,FIFO_MODE_CLI);
+			usleep(1000);
+		}
+
+		GtkClipboard* clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+		/* Print clipboard text (if any) */
+		gchar* clip_text = gtk_clipboard_wait_for_text(clip);
+		if (clip_text)
+			g_print("%s", clip_text);
+		g_free(clip_text);
+
+	} else { /*use CLIPBOARD*/
+		GtkClipboard* clip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+		fifo = init_fifo(FIFO_MODE_NONE|mode);
+		/* Copy from unrecognized options */
+		if (PROG_MODE_CLIENT & mode) {
+			if (NULL != opts->leftovers) {
+				write_fifo(fifo,FIFO_MODE_CLI,opts->leftovers,strlen(opts->leftovers));
+				g_free(opts->leftovers);
+			}
+			/* Check if stdin is piped */
+			write_stdin(fifo,FIFO_MODE_CLI);
+			usleep(1000);
+		}
+	}
+
+	/* Run as daemon option */
 	if (opts->daemon && (PROG_MODE_DAEMON & mode))	{
 		init_daemon_mode();
 	}
 
-	if(PROG_MODE_CLIENT & mode){
+	if (PROG_MODE_CLIENT & mode) {
 		close_fifos(fifo);
 		return 0;
 	}

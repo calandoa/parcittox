@@ -224,6 +224,8 @@ int init_pref( void )
 	dummy[1].sec = PREF_SEC_NONE;
 
 	//fprintf(stderr, "++++++++++++++++++ str is %p %p <%s>\n", dummy, dummy[0].cval, dummy[0].cval);
+
+	return 0;
 }
 /***************************************************************************/
 /** set the wideget of item.
@@ -236,6 +238,8 @@ int set_pref_widget (char *name, GtkWidget *w)
 	if (NULL == p)
 		return -1;
 	p->w = w;
+
+	return 0;
 }
 /***************************************************************************/
 /** get the char * value of string.
@@ -289,6 +293,8 @@ int set_pref_string (char *name, char *string)
 	if (p->cval != NULL)
 		g_free(p->cval);
 	p->cval = g_strdup(string);
+
+	return 0;
 }
 
 /***************************************************************************/
