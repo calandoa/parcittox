@@ -406,8 +406,24 @@ gchar *update_clipboard(GtkClipboard *clip,gchar *intext, gint mode)
 			else set=1;
 
 			last = _update_clipboard(clip,processed,existing,set && clip);
+#if HAVE_DITTOX
+			/* Clip received from the network: also put it on the Ctrl+C clipboard, so that
+			 * other clipboard managers (e.g. GNOME's Clipboard Indicator) see it. Recording it
+			 * as the current clipboard text means the next clipboard check sees no change,
+			 * so the clip is not sent back to the host it came from. */
+			if (!clip && last && get_pref_int32("use_copy")) {
+				gtk_clipboard_set_text(clipboard, last, -1);
+				g_free(ctext);
+				ctext = g_strdup(last);
+			}
+#endif
 		} else { /**restore clipboard	*/
 			gchar *d;
+
+			/* Clipboard holds non-text content (e.g. an image): leave it alone
+			 * instead of overwriting it with the last text item. */
+			if (clip && !is_clipboard_empty(clip))
+				goto done;
 
 			if (NULL == *existing && NULL != history_list) {
 				struct history_item *c;
