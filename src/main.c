@@ -420,6 +420,11 @@ gchar *update_clipboard(GtkClipboard *clip,gchar *intext, gint mode)
 		} else { /**restore clipboard	*/
 			gchar *d;
 
+			/* Clipboard holds non-text content (e.g. an image): leave it alone
+			 * instead of overwriting it with the last text item. */
+			if (clip && !is_clipboard_empty(clip))
+				goto done;
+
 			if (NULL == *existing && NULL != history_list) {
 				struct history_item *c;
 				c=(struct history_item *)(history_list->data);
